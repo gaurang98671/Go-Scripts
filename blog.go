@@ -2,9 +2,9 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
+	"text/template"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -40,12 +40,15 @@ func getPage(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("Page not found")
 		log.Println(err)
+		http.ServeFile(w, r, "404.html")
 	}
-	fmt.Fprint(w, thisPage.Title)
+
+	t, _ := template.ParseFiles("templates/blog.html")
+	t.Execute(w, thisPage)
 }
 
 func main() {
-	//dbConn := fmt.Sprint("mysql", "root:1962@/blogs")
+
 	db, err := sql.Open("mysql", "root:1962@/blogs")
 	if err != nil {
 		log.Println("Failed to connect")
