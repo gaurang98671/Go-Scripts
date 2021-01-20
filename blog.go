@@ -2,10 +2,10 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
+	//"fmt"
+	"html/template"
 	"log"
 	"net/http"
-	"text/template"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -26,6 +26,7 @@ type Page struct {
 	Title   string
 	Content string
 	Date    string
+	GUIDE   string
 }
 
 func homePage(w http.ResponseWriter, r *http.Request) {
@@ -34,29 +35,31 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
 	var Pages = []Page{}
-	pages, err := database.Query("SELECT page_title, page_content, page_date FROM blog ORDER BY page_date DESC")
+	pages, err := database.Query("SELECT page_title, page_content, page_date, page_guide FROM blog ORDER BY page_date DESC")
 
 	if err != nil {
 		log.Println("Unable to fetch records")
 		log.Println(err)
 	}
-
+	defer pages.Close()
 	for pages.Next() {
 		thisPage := Page{}
-		pages.Scan(&thisPage.Title, &thisPage.Content, &thisPage.Date)
+		pages.Scan(&thisPage.Title, &thisPage.Content, &thisPage.Date, &thisPage.GUIDE)
 		Pages = append(Pages, thisPage)
 	}
 
-	fmt.Fprint(w, Pages)
+	t, _ := template.ParseFiles("templates/home.html")
+	t.Execute(w, Pages)
+	//fmt.Fprint(w, Pages)
 
 }
 
 func getPage(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id := vars["id"]
+	guide := vars["guide"]
 	thisPage := Page{}
-	log.Println(id)
-	err := database.QueryRow("SELECT page_title,page_content,page_date FROM blog WHERE id=?", id).Scan(&thisPage.Title, &thisPage.Content, &thisPage.Date)
+	log.Println(guide)
+	err := database.QueryRow("SELECT page_title,page_content,page_date FROM blog WHERE page_guide=?", guide).Scan(&thisPage.Title, &thisPage.Content, &thisPage.Date)
 	if err != nil {
 		log.Println("Page not found")
 		log.Println(err)
@@ -80,7 +83,7 @@ func main() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/", homePage)
-	router.HandleFunc("/page/{id}", getPage)
+	router.HandleFunc("/page/{guide}", getPage)
 	router.HandleFunc("/home", serveHome)
 	http.ListenAndServe(Port, router)
 }
