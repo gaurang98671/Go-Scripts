@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"text/template"
@@ -28,7 +29,26 @@ type Page struct {
 }
 
 func homePage(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "homePage.html")
+	http.Redirect(w, r, "/home", 301)
+}
+
+func serveHome(w http.ResponseWriter, r *http.Request) {
+	var Pages = []Page{}
+	pages, err := database.Query("SELECT page_title, page_content, page_date FROM blog ORDER BY page_date DESC")
+
+	if err != nil {
+		log.Println("Unable to fetch records")
+		log.Println(err)
+	}
+
+	for pages.Next() {
+		thisPage := Page{}
+		pages.Scan(&thisPage.Title, &thisPage.Content, &thisPage.Date)
+		Pages = append(Pages, thisPage)
+	}
+
+	fmt.Fprint(w, Pages)
+
 }
 
 func getPage(w http.ResponseWriter, r *http.Request) {
@@ -61,5 +81,6 @@ func main() {
 
 	router.HandleFunc("/", homePage)
 	router.HandleFunc("/page/{id}", getPage)
+	router.HandleFunc("/home", serveHome)
 	http.ListenAndServe(Port, router)
 }
