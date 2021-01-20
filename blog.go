@@ -45,6 +45,7 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 	for pages.Next() {
 		thisPage := Page{}
 		pages.Scan(&thisPage.Title, &thisPage.Content, &thisPage.Date, &thisPage.GUIDE)
+		thisPage.Content = truncate(thisPage)
 		Pages = append(Pages, thisPage)
 	}
 
@@ -70,6 +71,15 @@ func getPage(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, thisPage)
 }
 
+func truncate(page Page) string {
+	if len(page.Content) > 150 {
+		content := page.Content
+		truncated_content := []rune(content)
+		new_truncated_content := string(truncated_content[0:150]) + "...."
+		return new_truncated_content
+	}
+	return page.Content
+}
 func main() {
 
 	db, err := sql.Open("mysql", "root:1962@/blogs")
