@@ -8,5 +8,30 @@
  {{.Content}}
  </p>
  <div>{{.Date}}</div>
+ <div id="comments">
+     <div>
+         <h2>Comments</h2>
+     </div>
+    <form action="/api/comments">
+        <input type="hidden" name="guide" value="{{.GUIDE}}" />
+        <div>
+                <input type="hidden" name="page_id" value="{{.ID}}" />
+
+        </div>
+        
+        <div>
+            <input type="text" name="name" id="Your name" placeholder="Your name">
+        </div>
+        <div>
+            <input type="text" name="email" id="email" placeholder="Your email">
+        </div>
+        <div>
+            <input type="text" name="comment" id="comment" placeholder="Comment">
+        </div>
+        <div>
+            <input type="submit" value="Add comment">
+        </div>
+    </form>
+ </div>
 </body>
 </html>
