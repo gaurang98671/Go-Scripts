@@ -32,6 +32,19 @@
             <input type="submit" value="Add comment">
         </div>
     </form>
+
+    <div>
+        {{range .Comments}}
+        <div>
+            <div>
+                Comment by {{.Name}} ({{.Email}})
+            </div>
+            <div>
+                {{.Comment}}
+            </div>
+        </div>
+        {{end}}
+    </div>
  </div>
 </body>
 </html>

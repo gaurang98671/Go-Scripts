@@ -29,9 +29,17 @@ type Page struct {
 	ID         string
 	Title      string
 	Content    template.HTML
+	Comments   []Comment
 	RawContent string
 	Date       string
 	GUIDE      string
+}
+
+type Comment struct {
+	Id      int
+	Name    string
+	Email   string
+	Comment string
 }
 
 type JSONResponse struct {
@@ -80,6 +88,19 @@ func getPage(w http.ResponseWriter, r *http.Request) {
 	}
 	thisPage.GUIDE = guide
 	thisPage.Content = template.HTML(thisPage.RawContent)
+
+	comments, err := database.Query("SELECT name, email, comment from comments where page_id=?", thisPage.ID)
+	if err != nil {
+		log.Println(err)
+	}
+
+	for comments.Next() {
+		var thisComment Comment
+		comments.Scan(&thisComment.Name, &thisComment.Email, &thisComment.Comment)
+
+		thisPage.Comments = append(thisPage.Comments, thisComment)
+	}
+
 	t, _ := template.ParseFiles("templates/blog.html")
 	t.Execute(w, thisPage)
 }
