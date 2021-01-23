@@ -70,6 +70,7 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 
 	t, _ := template.ParseFiles("templates/home.html")
 	t.Execute(w, Pages)
+
 	//fmt.Fprint(w, Pages)
 
 }
