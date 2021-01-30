@@ -1,0 +1,38 @@
+<html>
+    <head>
+        <title>
+            Web sockets!!
+        </title>
+    </head>
+    <body>
+        <form action="sendMessage()">
+            <input type="text" name="message" id="message">
+        </form>
+        <button onclick="sendMessage()">Click meee</button>
+    </body>
+    <script>
+       
+        const ws= new WebSocket("ws://localhost:8080/ws")
+        console.log("attempting connection")
+        ws.onopen= ()=>{
+            console.log("Successfully connected")
+            ws.send("Hi from client")
+        }
+
+        ws.onclose= (event)=>{
+            console.log("Connection closed")
+        
+        }
+
+        ws.onerror= (error)=> {
+            console.log("Error: ", error)
+        }
+
+        function sendMessage()
+        {
+          
+            
+            ws.send(document.getElementById("message").value)
+        }
+    </script>
+</html>
