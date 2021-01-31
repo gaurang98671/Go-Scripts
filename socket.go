@@ -21,13 +21,16 @@ func reader(conn *websocket.Conn) {
 			log.Println(err)
 			return
 		}
-		log.Println(string(p))
+		conn.
+			log.Println(string(p))
 
 		if err := conn.WriteMessage(messageType, p); err != nil {
 			log.Println(err)
 			return
 		}
+
 		log.Println("message sent")
+
 	}
 
 }
@@ -42,6 +45,7 @@ func serveSocket(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("Client connected")
 	reader(ws)
+
 }
 
 func serveHome(w http.ResponseWriter, r *http.Request) {

@@ -9,6 +9,7 @@
             <input type="text" name="message" id="message">
         </form>
         <button onclick="sendMessage()">Click meee</button>
+        <ul id="chat"></ul>
     </body>
     <script>
        
@@ -17,6 +18,10 @@
         ws.onopen= ()=>{
             console.log("Successfully connected")
             ws.send("Hi from client")
+        }
+
+        ws.onmessage= (m)=>{
+            console.log(m)
         }
 
         ws.onclose= (event)=>{
@@ -28,10 +33,15 @@
             console.log("Error: ", error)
         }
 
+        ws.onmessage= function (message){
+            var element= document.createElement("li")
+            var text= document.createTextNode(message.data)
+            element.appendChild(text)
+            document.getElementById("chat").appendChild(element)
+        }
         function sendMessage()
         {
-          
-            
+
             ws.send(document.getElementById("message").value)
         }
     </script>
