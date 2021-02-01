@@ -14,6 +14,8 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
+var m = make(map[*websocket.Conn]bool)
+
 func reader(conn *websocket.Conn) {
 	for {
 		messageType, p, err := conn.ReadMessage()
@@ -21,15 +23,14 @@ func reader(conn *websocket.Conn) {
 			log.Println(err)
 			return
 		}
-		conn.
-			log.Println(string(p))
-
-		if err := conn.WriteMessage(messageType, p); err != nil {
-			log.Println(err)
-			return
+		fmt.Println(p)
+		if string(p) == "hello" {
+			conn.WriteMessage(messageType, []byte("hi"))
 		}
+		for c, _ := range m {
 
-		log.Println("message sent")
+			c.WriteMessage(messageType, p)
+		}
 
 	}
 
@@ -44,6 +45,9 @@ func serveSocket(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 	log.Println("Client connected")
+	m[ws] = true
+	fmt.Println(len(m))
+
 	reader(ws)
 
 }
