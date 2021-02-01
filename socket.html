@@ -6,9 +6,9 @@
     </head>
     <body>
         <form action="sendMessage()">
-            <input type="text" name="message" id="message">
+            <input type="text" name="message" id="message" placeholder="Type a message">
         </form>
-        <button onclick="sendMessage()">Click meee</button>
+        <button onclick="sendMessage()">Send</button>
         <ul id="chat"></ul>
     </body>
     <script>
@@ -17,7 +17,7 @@
         console.log("attempting connection")
         ws.onopen= ()=>{
             console.log("Successfully connected")
-            ws.send("Hi from client")
+            ws.send("New user joined")
         }
 
         ws.onmessage= (m)=>{

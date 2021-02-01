@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -14,6 +15,8 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
+var cookie http.Cookie
+
 var m = make(map[*websocket.Conn]bool)
 
 func reader(conn *websocket.Conn) {
@@ -23,13 +26,12 @@ func reader(conn *websocket.Conn) {
 			log.Println(err)
 			return
 		}
-		fmt.Println(p)
-		if string(p) == "hello" {
-			conn.WriteMessage(messageType, []byte("hi"))
-		}
+		prefix_string := string(cookie.Value) + " says: "
+		prefix := []byte(prefix_string)
+		p1 := append(prefix[:], p[:]...)
 		for c, _ := range m {
 
-			c.WriteMessage(messageType, p)
+			c.WriteMessage(messageType, p1)
 		}
 
 	}
@@ -37,6 +39,7 @@ func reader(conn *websocket.Conn) {
 }
 
 func serveSocket(w http.ResponseWriter, r *http.Request) {
+
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 
 	ws, err := upgrader.Upgrade(w, r, nil)
@@ -47,13 +50,32 @@ func serveSocket(w http.ResponseWriter, r *http.Request) {
 	log.Println("Client connected")
 	m[ws] = true
 	fmt.Println(len(m))
-
 	reader(ws)
 
 }
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "home")
+	log.Println(cookie.Value)
+	http.ServeFile(w, r, "home.html")
+	//fmt.Fprint(w, "Home")
+}
+
+func serveChat(w http.ResponseWriter, r *http.Request) {
+	if cookie.Value == "" {
+		http.Redirect(w, r, "/", 302)
+	}
+	http.ServeFile(w, r, "socket.html")
+
+}
+
+func registerUser(w http.ResponseWriter, r *http.Request) {
+	name := r.FormValue("userName")
+	cookie.Name = "userName"
+	cookie.Value = string(name)
+	cookie.Expires = time.Now().Add(60 * time.Second)
+	cookie.HttpOnly = true
+	log.Println("Cookie set")
+	http.Redirect(w, r, "/room", 301)
 }
 
 func main() {
@@ -61,5 +83,7 @@ func main() {
 
 	router.HandleFunc("/", serveHome)
 	router.HandleFunc("/ws", serveSocket)
+	router.HandleFunc("/room", serveChat)
+	router.HandleFunc("/register", registerUser)
 	http.ListenAndServe(":8080", router)
 }
