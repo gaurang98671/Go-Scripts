@@ -74,6 +74,7 @@ func registerUser(w http.ResponseWriter, r *http.Request) {
 	cookie.Value = string(name)
 	cookie.Expires = time.Now().Add(60 * time.Second)
 	cookie.HttpOnly = true
+	http.SetCookie(w, &cookie)
 	log.Println("Cookie set")
 	http.Redirect(w, r, "/room", 301)
 }

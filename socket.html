@@ -34,6 +34,7 @@
         }
 
         ws.onmessage= function (message){
+            
             var element= document.createElement("li")
             var text= document.createTextNode(message.data)
             element.appendChild(text)
@@ -41,7 +42,7 @@
         }
         function sendMessage()
         {
-
+            //send json of time and userName
             ws.send(document.getElementById("message").value)
         }
     </script>
