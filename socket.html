@@ -13,6 +13,7 @@
     </body>
     <script>
        
+       var date= new Date()
         const ws= new WebSocket("ws://localhost:8080/ws")
         console.log("attempting connection")
         ws.onopen= ()=>{
@@ -35,6 +36,9 @@
 
         ws.onmessage= function (message){
             
+            //Decode json to extract message
+            
+            
             var element= document.createElement("li")
             var text= document.createTextNode(message.data)
             element.appendChild(text)
@@ -42,8 +46,13 @@
         }
         function sendMessage()
         {
+            
             //send json of time and userName
-            ws.send(document.getElementById("message").value)
+            var msg= document.getElementById("message").value
+            var time= date.getTime().toString
+            var message= {"name": "gaurang", "time": time, "message": msg} 
+            
+            ws.send(JSON.stringify(message))
         }
     </script>
 </html>

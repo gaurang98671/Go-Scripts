@@ -15,23 +15,24 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-var cookie http.Cookie
-
 var m = make(map[*websocket.Conn]bool)
 
 func reader(conn *websocket.Conn) {
+	defer func() {
+		conn.Close()
+		delete(m, conn)
+	}()
 	for {
+
 		messageType, p, err := conn.ReadMessage()
 		if err != nil {
 			log.Println(err)
 			return
 		}
-		prefix_string := string(cookie.Value) + " says: "
-		prefix := []byte(prefix_string)
-		p1 := append(prefix[:], p[:]...)
+
 		for c, _ := range m {
 
-			c.WriteMessage(messageType, p1)
+			c.WriteMessage(messageType, p)
 		}
 
 	}
@@ -49,34 +50,37 @@ func serveSocket(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("Client connected")
 	m[ws] = true
-	fmt.Println(len(m))
+	fmt.Println(len(m)) //Prints number of active connections
 	reader(ws)
 
 }
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
-	log.Println(cookie.Value)
-	http.ServeFile(w, r, "home.html")
-	//fmt.Fprint(w, "Home")
-}
 
-func serveChat(w http.ResponseWriter, r *http.Request) {
-	if cookie.Value == "" {
-		http.Redirect(w, r, "/", 302)
-	}
-	http.ServeFile(w, r, "socket.html")
+	http.ServeFile(w, r, "home.html") //Register user name form
 
 }
 
 func registerUser(w http.ResponseWriter, r *http.Request) {
+	log.Println("In register function")
 	name := r.FormValue("userName")
-	cookie.Name = "userName"
-	cookie.Value = string(name)
-	cookie.Expires = time.Now().Add(60 * time.Second)
-	cookie.HttpOnly = true
+
+	cookie := http.Cookie{Name: "chat-user-name", Value: name, Expires: time.Now().Add(60 * time.Minute), HttpOnly: true}
+
 	http.SetCookie(w, &cookie)
 	log.Println("Cookie set")
-	http.Redirect(w, r, "/room", 301)
+	//http.Redirect(w, r, "/chat-room", http.StatusPermanentRedirect)
+}
+
+func serveRoom(w http.ResponseWriter, r *http.Request) {
+	if _, err := r.Cookie("chat-user-name"); err != nil {
+
+		log.Println("No cookie found")
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+	} else {
+
+		http.ServeFile(w, r, "socket.html")
+	}
 }
 
 func main() {
@@ -84,7 +88,7 @@ func main() {
 
 	router.HandleFunc("/", serveHome)
 	router.HandleFunc("/ws", serveSocket)
-	router.HandleFunc("/room", serveChat)
+	router.HandleFunc("/chat-room", serveRoom)
 	router.HandleFunc("/register", registerUser)
 	http.ListenAndServe(":8080", router)
 }
