@@ -76,7 +76,7 @@ func serveRoom(w http.ResponseWriter, r *http.Request) {
 	if _, err := r.Cookie("chat-user-name"); err != nil {
 
 		log.Println("No cookie found")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", 302)
 	} else {
 
 		http.ServeFile(w, r, "socket.html")

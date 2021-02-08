@@ -5,6 +5,7 @@
         </title>
     </head>
     <body>
+        <div id="name"></div>
         <form action="sendMessage()">
             <input type="text" name="message" id="message" placeholder="Type a message">
         </form>
@@ -27,6 +28,7 @@
 
         ws.onclose= (event)=>{
             console.log("Connection closed")
+            
         
         }
 
@@ -39,20 +41,32 @@
             //Decode json to extract message
             
             
+            
+            //console.log(JSON.parse(message))
+            
+            console.log(message.data.toString())
             var element= document.createElement("li")
             var text= document.createTextNode(message.data)
             element.appendChild(text)
             document.getElementById("chat").appendChild(element)
         }
+
+        
         function sendMessage()
         {
             
             //send json of time and userName
+
+            const cookieValue = document.cookie.split("=")
+
             var msg= document.getElementById("message").value
-            var time= date.getTime().toString
-            var message= {"name": "gaurang", "time": time, "message": msg} 
             
-            ws.send(JSON.stringify(message))
+            var message= {'name': cookieValue[1] , 'message': msg} 
+            console.log(message['name'])
+            ws.send(JSON.stringify( message))
+            
+
+            document.getElementById("message").value= "";
         }
     </script>
 </html>
