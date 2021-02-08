@@ -69,7 +69,7 @@ func registerUser(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, &cookie)
 	log.Println("Cookie set")
-	//http.Redirect(w, r, "/chat-room", http.StatusPermanentRedirect)
+	http.Redirect(w, r, "/chat-room", http.StatusTemporaryRedirect)
 }
 
 func serveRoom(w http.ResponseWriter, r *http.Request) {
